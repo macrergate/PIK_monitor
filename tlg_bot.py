@@ -88,7 +88,9 @@ class Checker(object):
         self.credentials = credentials
         self.silent = silent
         self.folder = folder
-        self.bot = TelegramSender(self.credentials.auth_token, self.credentials.chat_id, folder)
+
+        if not self.silent:
+            self.bot = TelegramSender(self.credentials.auth_token, self.credentials.chat_id, folder)
 
     def check(self):
         # Логинимся и получаем данные
@@ -112,11 +114,12 @@ class Checker(object):
                     print('Обнаружены изменения!')
                     print(diffs)
                     changes.append({'label': label, 'values': diffs})
-                    # dump_data(params['new_data'], path)
+                    dump_data(getattr(pik_data, params['new_data']), path)
                 else:
                     print('    Изменений нет!')
             except Exception as e:
                 print('Exception:', str(e))
+
         if changes and not self.silent:
             if init:
                self.bot.send_init_message(changes)
@@ -137,8 +140,6 @@ if __name__ == '__main__':
 
     if mode == 'single':
         checker.check()
-        print("Wait {} sec.".format(delay))
-        time.sleep(delay)
     elif mode == 'loop':
         while True:
             checker.check()
